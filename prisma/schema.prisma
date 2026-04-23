@@ -1,0 +1,71 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id       String @id @default(cuid())
+  email    String @unique
+  password String
+  role     String @default("USER")
+}
+
+model Product {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+
+  embedding   Float[]  // vector embedding for semantic search
+  category    String?   
+  brand       String?
+  color       String?
+  fabric      String?
+  occasion    String?
+
+  createdAt   DateTime @default(now())
+
+  variants    ProductVariant[]
+}
+
+model ProductVariant {
+  id        String   @id @default(cuid())
+  productId String
+  product   Product  @relation(fields: [productId], references: [id])
+
+  size      String
+  price     Float
+  stock     Int
+
+  sku       String   @unique
+
+  createdAt DateTime @default(now())
+}
+
+model Cart {
+  id        String     @id @default(cuid())
+  userId    String
+  items     CartItem[]
+  createdAt DateTime   @default(now())
+}
+
+model CartItem {
+  id        String   @id @default(cuid())
+  cartId    String
+  productId String
+  quantity  Int
+
+  cart Cart @relation(fields: [cartId], references: [id])
+}
+
+model Order {
+  id        String   @id @default(cuid())
+  userId    String
+  total     Float
+  status    String   @default("PENDING") 
+  paymentId String?  // Stripe payment intent id
+  createdAt DateTime @default(now())
+}
+
