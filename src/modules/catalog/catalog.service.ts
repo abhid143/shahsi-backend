@@ -4,7 +4,7 @@ import { CreateProductDto } from './application/dto/create-product.dto';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import type { Cache } from 'cache-manager';
 import { TypesenseService } from '../search/infrastructure/typesense.service';
-import { EmbeddingService } from '../ai/embedding.service'; 
+import { EmbeddingService } from '../ai/embedding.service';
 
 @Injectable()
 export class CatalogService {
@@ -15,9 +15,8 @@ export class CatalogService {
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
   ) {}
 
-  // 🔥 CREATE PRODUCT + INDEX + EMBEDDING (SAFE)
+  // 🔥 CREATE PRODUCT (UPDATED)
   async createProduct(dto: CreateProductDto) {
-    // ✅ safe embedding (no crash)
     let embedding: number[] = [];
 
     try {
@@ -29,18 +28,46 @@ export class CatalogService {
 
     const product = await this.prisma.product.create({
       data: {
-        ...dto,
-        embedding, // ✅ safe
+        title: dto.title,
+        description: dto.description,
+        slug: dto.slug,
+
+        category: dto.category,
+        brand: dto.brand,
+        color: dto.color,
+        fabric: dto.fabric,
+        occasion: dto.occasion,
+
+        composition: dto.composition,
+        style: dto.style,
+        print: dto.print,
+        badge: dto.badge,
+
+        primaryCollection: dto.primaryCollection,
+        secondaryCollection: dto.secondaryCollection,
+
+        basePrice: dto.basePrice,
+        currency: dto.currency,
+
+        seoTitle: dto.seoTitle,
+        seoDescription: dto.seoDescription,
+
+        embedding,
+
+        // 🔥 RELATIONS
+        images: {
+          create: dto.images,
+        },
         variants: {
           create: dto.variants,
         },
       },
       include: {
         variants: true,
+        images: true,
       },
     });
 
-    // 🔥 index in Typesense
     await this.typesense.indexProduct({
       id: product.id,
       title: product.title,
@@ -49,13 +76,12 @@ export class CatalogService {
       brand: product.brand,
     });
 
-    // 🔥 clear cache
     await this.cacheManager.del('all_products');
 
     return product;
   }
 
-  // 🔥 GET ALL (WITH CACHE)
+  // 🔥 GET ALL
   async getAllProducts() {
     const cacheKey = 'all_products';
 
@@ -66,10 +92,8 @@ export class CatalogService {
       return JSON.parse(cached);
     }
 
-    console.log('❌ CACHE MISS → DB CALL');
-
     const products = await this.prisma.product.findMany({
-      include: { variants: true },
+      include: { variants: true, images: true },
       orderBy: { createdAt: 'desc' },
     });
 
@@ -82,45 +106,29 @@ export class CatalogService {
   async getProductById(id: string) {
     return this.prisma.product.findUnique({
       where: { id },
-      include: { variants: true },
+      include: { variants: true, images: true },
     });
   }
 
-  // 🔥 FILTER SYSTEM (FIXED + FLEXIBLE)
+  // 🔥 FILTER (no change needed major)
   async filterProducts(query: any) {
     const filters: any = {};
 
     if (query.category) {
-      filters.category = {
-        contains: query.category,
-        mode: 'insensitive',
-      };
+      filters.category = { contains: query.category, mode: 'insensitive' };
     }
 
     if (query.color) {
-      filters.color = {
-        contains: query.color,
-        mode: 'insensitive',
-      };
-    }
-
-    if (query.occasion) {
-      filters.occasion = {
-        contains: query.occasion,
-        mode: 'insensitive',
-      };
+      filters.color = { contains: query.color, mode: 'insensitive' };
     }
 
     if (query.brand) {
-      filters.brand = {
-        contains: query.brand,
-        mode: 'insensitive',
-      };
+      filters.brand = { contains: query.brand, mode: 'insensitive' };
     }
 
     const products = await this.prisma.product.findMany({
       where: filters,
-      include: { variants: true },
+      include: { variants: true, images: true },
     });
 
     return {
@@ -129,28 +137,13 @@ export class CatalogService {
     };
   }
 
-  // 🔥 UPDATE PRODUCT + RE-INDEX
+  // 🔥 UPDATE PRODUCT
   async updateProduct(id: string, dto: any) {
     const product = await this.prisma.product.update({
       where: { id },
       data: {
-        title: dto.title,
-        description: dto.description,
-        category: dto.category,
-        brand: dto.brand,
-        color: dto.color,
-        fabric: dto.fabric,
-        occasion: dto.occasion,
+        ...dto,
       },
-    });
-
-    // 🔥 re-index in Typesense
-    await this.typesense.indexProduct({
-      id: product.id,
-      title: product.title,
-      category: product.category,
-      color: product.color,
-      brand: product.brand,
     });
 
     await this.cacheManager.del('all_products');
@@ -158,28 +151,14 @@ export class CatalogService {
     return product;
   }
 
-  // 🔥 DELETE PRODUCT + REMOVE FROM SEARCH
+  // 🔥 DELETE PRODUCT
   async deleteProduct(id: string) {
-    await this.prisma.productVariant.deleteMany({
-      where: { productId: id },
-    });
-
-    const product = await this.prisma.product.delete({
+    await this.prisma.product.delete({
       where: { id },
     });
 
-    // 🔥 delete from Typesense
-    try {
-      await this.typesense.client
-        .collections('products')
-        .documents(id)
-        .delete();
-    } catch (e) {
-      console.log('Typesense delete error (safe to ignore)');
-    }
-
     await this.cacheManager.del('all_products');
 
-    return product;
+    return { message: 'Deleted successfully' };
   }
 }

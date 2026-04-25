@@ -15,34 +15,79 @@ model User {
 
 model Product {
   id          String   @id @default(cuid())
+
   title       String
   description String?
 
-  embedding   Float[]  // vector embedding for semantic search
-  category    String?   
+  slug String @default("")
+
+  category    String?
   brand       String?
   color       String?
   fabric      String?
   occasion    String?
 
+  // 🔥 NEW FIELDS
+  composition  String?
+  style        String?
+  print        String?
+  badge        String?
+
+  primaryCollection   String?
+  secondaryCollection String?
+
+  basePrice   Float?
+  currency    String @default("USD")
+
+  status      String @default("active")
+
+  seoTitle        String?
+  seoDescription  String?
+
+  printSwatch     String?
+
+  embedding   Float[]
+
   createdAt   DateTime @default(now())
+  updatedAt DateTime @default(now())
 
   variants    ProductVariant[]
+  images      ProductImage[]
 }
 
 model ProductVariant {
   id        String   @id @default(cuid())
+
   productId String
-  product   Product  @relation(fields: [productId], references: [id])
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
 
   size      String
-  price     Float
+
+  price         Float
+  compareAtPrice Float?
+
   stock     Int
 
   sku       String   @unique
+  barcode   String?
+
+  weight    Float?
+  weightUnit String?
 
   createdAt DateTime @default(now())
 }
+
+model ProductImage {
+  id        String   @id @default(cuid())
+
+  productId String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  url       String
+  alt       String?
+  isPrimary Boolean @default(false)
+}
+
 
 model Cart {
   id        String     @id @default(cuid())
