@@ -106,11 +106,28 @@ model CartItem {
 }
 
 model Order {
-  id        String   @id @default(cuid())
-  userId    String
-  total     Float
-  status    String   @default("PENDING") 
-  paymentId String?  // Stripe payment intent id
-  createdAt DateTime @default(now())
+  id         String   @id @default(cuid())
+  userId     String
+  total      Float
+
+  status     String   @default("PENDING") // PENDING | PAID | FAILED
+
+  paymentId  String?  // Stripe PaymentIntent ID
+
+  items      OrderItem[]
+
+  createdAt  DateTime @default(now())
+
+  // ✅ FIX: temporary default add karo
+  updatedAt  DateTime @default(now()) @updatedAt
 }
 
+model OrderItem {
+  id        String  @id @default(cuid())
+  orderId   String
+  productId String
+  quantity  Int
+  price     Float
+
+  order Order @relation(fields: [orderId], references: [id])
+}

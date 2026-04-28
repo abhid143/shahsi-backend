@@ -16,12 +16,19 @@ export class WebhookController {
     @Req() req: RawBodyRequest<Request>,
     @Headers('stripe-signature') sig: string,
   ) {
-    const event = this.stripe.constructEvent(req.rawBody || Buffer.alloc(0), sig);
+    const event = this.stripe.constructEvent(
+      req.rawBody || Buffer.alloc(0),
+      sig,
+    );
 
     if (event.type === 'payment_intent.succeeded') {
       const paymentIntent = event.data.object as any;
-
       await this.payments.handleSuccess(paymentIntent.id);
+    }
+
+    if (event.type === 'payment_intent.payment_failed') {
+      const paymentIntent = event.data.object as any;
+      await (this.payments as any).handleFailure(paymentIntent.id);
     }
 
     return { received: true };

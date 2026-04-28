@@ -9,33 +9,40 @@ export class PaymentsService {
     private stripe: StripeService,
   ) {}
 
-  async createPayment(userId: string) {
-    const order = await this.prisma.order.findFirst({
-      where: { userId, status: 'PENDING' },
-    });
+  async createPayment(orderId: string) {
+  const order = await this.prisma.order.findUnique({
+    where: { id: orderId },
+  });
 
-    if (!order) {
-      throw new Error('No pending order found');
-    }
-
-    const intent = await this.stripe.createPaymentIntent(order.total);
-
-    await this.prisma.order.update({
-      where: { id: order.id },
-      data: {
-        paymentId: intent.id,
-      },
-    });
-
-    return {
-      clientSecret: intent.client_secret,
-    };
+  if (!order) {
+    throw new Error('Order not found');
   }
+
+  const intent = await this.stripe.createPaymentIntent(order.total);
+
+  await this.prisma.order.update({
+    where: { id: order.id },
+    data: {
+      paymentId: intent.id,
+    },
+  });
+
+  return {
+    clientSecret: intent.client_secret,
+  };
+}
 
   async handleSuccess(paymentIntentId: string) {
     return this.prisma.order.updateMany({
       where: { paymentId: paymentIntentId },
       data: { status: 'PAID' },
+    });
+  }
+
+  async handleFailure(paymentIntentId: string) {
+    return this.prisma.order.updateMany({
+      where: { paymentId: paymentIntentId },
+      data: { status: 'FAILED' },
     });
   }
 }

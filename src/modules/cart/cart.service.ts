@@ -24,6 +24,24 @@ export class CartService {
   async addToCart(userId: string, productId: string, quantity: number) {
     const cart = await this.getCart(userId);
 
+    // 🔥 CHECK if product already exists in cart
+    const existing = await this.prisma.cartItem.findFirst({
+      where: {
+        cartId: cart.id,
+        productId,
+      },
+    });
+
+    if (existing) {
+      // 🔥 UPDATE quantity instead of duplicate
+      return this.prisma.cartItem.update({
+        where: { id: existing.id },
+        data: {
+          quantity: existing.quantity + quantity,
+        },
+      });
+    }
+
     return this.prisma.cartItem.create({
       data: {
         cartId: cart.id,
