@@ -131,3 +131,80 @@ model OrderItem {
 
   order Order @relation(fields: [orderId], references: [id])
 }
+
+model BridalPartyEvent {
+  id              String   @id @default(cuid())
+  organizerUserId String
+  name            String
+  eventDate       DateTime
+  status          String   @default("ACTIVE")
+  createdAt       DateTime @default(now())
+}
+
+model BridalPartyMember {
+  id        String @id @default(uuid())
+  eventId  String
+  userId   String?
+  email    String
+  name     String?
+  role     String
+  status   String @default("invited")
+  size       String?
+  preference String?
+
+  createdAt DateTime @default(now())
+}
+
+model BridalPartySelection {
+  id        String @id @default(uuid())
+  eventId   String
+  memberId  String
+  productId String
+  variantId String?
+  status    String // assigned | selected | approved | rejected
+
+  createdAt DateTime @default(now())
+}
+
+model BridalPartyPayment {
+  id                    String @id @default(uuid())
+  eventId               String
+  memberId              String
+  amount                Int
+  status                String // pending | paid | failed
+  stripePaymentIntentId String?
+
+  createdAt DateTime @default(now())
+}
+
+model BridalPartyInvite {
+  id        String   @id @default(uuid())
+  eventId   String
+  email     String
+  token     String   @unique
+  status    String   // sent | accepted | expired
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+}
+
+model Shipment {
+  id             String         @id @default(uuid())
+  eventId        String
+  orderId        String
+  status         String
+  trackingNumber String?
+  carrier        String?
+  createdAt      DateTime       @default(now())
+
+  items          ShipmentItem[]
+}
+
+model ShipmentItem {
+  id         String   @id @default(uuid())
+  shipmentId String
+  memberId   String
+  productId  String
+  status     String
+
+  shipment   Shipment @relation(fields: [shipmentId], references: [id])
+}

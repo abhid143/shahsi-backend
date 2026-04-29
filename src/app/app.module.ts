@@ -12,10 +12,13 @@ import { CartModule } from '../modules/cart/cart.module';
 import { CheckoutModule } from '../modules/checkout/checkout.module';
 import { PaymentsModule } from '../modules/payments/payments.module';
 import { SearchModule } from '../modules/search/search.module';
+import { BridalPartyModule } from '../modules/bridal-party/bridal-party.module';
 
 
 @Module({
-  imports: [AuthModule,CatalogModule,AppCacheModule,LoggingModule,CartModule,CheckoutModule,PaymentsModule,SearchModule], 
+  imports: [AuthModule,CatalogModule,AppCacheModule,
+    LoggingModule,CartModule,CheckoutModule,PaymentsModule,SearchModule,
+    BridalPartyModule], 
   controllers: [AppController,HealthController],
   providers: [AppService],
 })

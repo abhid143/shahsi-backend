@@ -48,6 +48,7 @@
     "stripe": "^22.0.2",
     "swagger-ui-express": "^5.0.1",
     "typesense": "^3.0.6",
+    "uuid": "^14.0.0",
     "winston": "^3.19.0"
   },
   "devDependencies": {

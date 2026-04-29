@@ -11,11 +11,12 @@ export class StripeService {
     });
   }
 
-  async createPaymentIntent(amount: number) {
+    async createPaymentIntent(amount: number, metadata: any) {
     return this.stripe.paymentIntents.create({
-      amount: Math.round(amount * 100), // ₹ → paise
+      amount: Math.round(amount * 100),
       currency: 'inr',
       automatic_payment_methods: { enabled: true },
+      metadata, // 🔥 IMPORTANT
     });
   }
 

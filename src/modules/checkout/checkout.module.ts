@@ -11,5 +11,6 @@ import { PaymentsModule } from '../payments/payments.module';
   ],
   providers: [CheckoutService],
   controllers: [CheckoutController],
+  exports: [CheckoutService],
 })
 export class CheckoutModule {}
