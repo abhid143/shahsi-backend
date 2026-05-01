@@ -5,6 +5,7 @@ import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import type { Cache } from 'cache-manager';
 import { TypesenseService } from '../search/infrastructure/typesense.service';
 import { EmbeddingService } from '../ai/embedding.service';
+import { FitEngineService } from '../fit-engine/fit-engine.service';
 
 @Injectable()
 export class CatalogService {
@@ -12,10 +13,11 @@ export class CatalogService {
     private prisma: PrismaService,
     private typesense: TypesenseService,
     private embeddingService: EmbeddingService,
+    private fitEngine: FitEngineService,
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
   ) {}
 
-  // 🔥 CREATE PRODUCT (UPDATED)
+  // 🔥 CREATE PRODUCT (FIXED)
   async createProduct(dto: CreateProductDto) {
     let embedding: number[] = [];
 
@@ -58,8 +60,16 @@ export class CatalogService {
         images: {
           create: dto.images,
         },
+
+        // ✅ FIXED HERE
         variants: {
-          create: dto.variants,
+          create: dto.variants.map((v) => ({
+            ...v,
+            chest: v.chest ?? 0,
+            waist: v.waist ?? 0,
+            length: v.length ?? 0,
+            fitType: v.fitType ?? 'regular',
+          })),
         },
       },
       include: {
@@ -110,7 +120,7 @@ export class CatalogService {
     });
   }
 
-  // 🔥 FILTER (no change needed major)
+  // 🔥 FILTER
   async filterProducts(query: any) {
     const filters: any = {};
 
@@ -160,5 +170,40 @@ export class CatalogService {
     await this.cacheManager.del('all_products');
 
     return { message: 'Deleted successfully' };
+  }
+
+    // 🔥 FIT + CATALOG CONNECT (MAIN LOGIC)
+  async getProductFit(productId: string, body: any) {
+    const product = await this.prisma.product.findUnique({
+      where: { id: productId },
+      include: { variants: true },
+    });
+
+    if (!product) {
+      throw new Error('Product not found');
+    }
+
+    if (!product.variants.length) {
+      throw new Error('No variants available');
+    }
+
+    // 🔥 DB → FitEngine format
+    const sizes = product.variants.map((v) => ({
+      label: v.size,
+      chest: v.chest,
+      waist: v.waist,
+    }));
+
+    // 🔥 CALL FIT ENGINE
+    const result = this.fitEngine.calculateFit({
+      ...body,
+      fitType: product.variants[0]?.fitType || 'regular',
+      sizes,
+    });
+
+    return {
+      productId,
+      ...result,
+    };
   }
 }

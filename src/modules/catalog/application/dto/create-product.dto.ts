@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
   IsString,
   IsOptional,
@@ -57,6 +57,28 @@ class VariantDto {
   @ApiProperty({ required: false })
   @IsOptional()
   weightUnit?: string;
+
+  // 🔥 NEW (FIT ENGINE FIELDS - IMPORTANT)
+
+  @ApiPropertyOptional({ example: 98 })
+  @IsOptional()
+  @IsNumber()
+  chest?: number;
+
+  @ApiPropertyOptional({ example: 85 })
+  @IsOptional()
+  @IsNumber()
+  waist?: number;
+
+  @ApiPropertyOptional({ example: 110 })
+  @IsOptional()
+  @IsNumber()
+  length?: number;
+
+  @ApiPropertyOptional({ example: 'regular' })
+  @IsOptional()
+  @IsString()
+  fitType?: 'slim' | 'regular' | 'oversized';
 }
 
 export class CreateProductDto {
@@ -92,7 +114,7 @@ export class CreateProductDto {
   @IsOptional()
   occasion?: string;
 
-  // 🔥 NEW FIELDS
+  // 🔥 EXTRA PRODUCT ATTRIBUTES
   @ApiProperty({ required: false })
   @IsOptional()
   composition?: string;

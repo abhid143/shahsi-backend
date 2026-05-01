@@ -13,12 +13,16 @@ import { CheckoutModule } from '../modules/checkout/checkout.module';
 import { PaymentsModule } from '../modules/payments/payments.module';
 import { SearchModule } from '../modules/search/search.module';
 import { BridalPartyModule } from '../modules/bridal-party/bridal-party.module';
-
+import { FitEngineModule } from '../modules/fit-engine/fit-engine.module';
+import { UserProfileModule } from '../modules/user-profile/user-profile.module';
+import { RecommendationEngineModule } from '../modules/recommendation-engine/recommendation-engine.module';
+import { ReturnsFeedbackModule } from '../modules/returns-feedback/returns-feedback.module';
 
 @Module({
   imports: [AuthModule,CatalogModule,AppCacheModule,
     LoggingModule,CartModule,CheckoutModule,PaymentsModule,SearchModule,
-    BridalPartyModule], 
+    BridalPartyModule,FitEngineModule,UserProfileModule,RecommendationEngineModule,
+    ReturnsFeedbackModule], 
   controllers: [AppController,HealthController],
   providers: [AppService],
 })

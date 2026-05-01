@@ -12,6 +12,9 @@ import { CatalogService } from './catalog.service';
 import { CreateProductDto } from './application/dto/create-product.dto';
 import { ApiResponse } from '../../shared/utils/api-response';
 
+// 🔥 ADD THIS IMPORT
+import { FitRequestDto } from '../fit-engine/dto/fit-request.dto';
+
 @Controller('catalog')
 export class CatalogController {
   constructor(private catalog: CatalogService) {}
@@ -49,6 +52,16 @@ export class CatalogController {
   @Delete(':id')
   async remove(@Param('id') id: string) {
     const data = await this.catalog.deleteProduct(id);
+    return ApiResponse.success(data);
+  }
+
+  // 🔥 NEW: FIT RECOMMENDATION API (NO CHANGE IN EXISTING APIs)
+  @Post(':id/fit')
+  async getFit(
+    @Param('id') productId: string,
+    @Body() body: Omit<FitRequestDto, 'sizes'>,
+  ) {
+    const data = await this.catalog.getProductFit(productId, body);
     return ApiResponse.success(data);
   }
 }

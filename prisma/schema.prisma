@@ -7,14 +7,14 @@ datasource db {
 }
 
 model User {
-  id       String @id @default(cuid())
+  id       String @id @default(uuid())
   email    String @unique
   password String
   role     String @default("USER")
 }
 
 model Product {
-  id          String   @id @default(cuid())
+  id          String   @id @default(uuid())
 
   title       String
   description String?
@@ -56,21 +56,19 @@ model Product {
 }
 
 model ProductVariant {
-  id        String   @id @default(cuid())
-
+  id        String   @id @default(uuid())
   productId String
   product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
-
   size      String
-
+  chest     Float
+  waist     Float
+  length    Float
+  fitType   String // slim | regular | oversized
   price         Float
   compareAtPrice Float?
-
   stock     Int
-
   sku       String   @unique
   barcode   String?
-
   weight    Float?
   weightUnit String?
 
@@ -78,7 +76,7 @@ model ProductVariant {
 }
 
 model ProductImage {
-  id        String   @id @default(cuid())
+  id        String   @id @default(uuid())
 
   productId String
   product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
@@ -90,14 +88,14 @@ model ProductImage {
 
 
 model Cart {
-  id        String     @id @default(cuid())
+  id        String     @id @default(uuid())
   userId    String
   items     CartItem[]
   createdAt DateTime   @default(now())
 }
 
 model CartItem {
-  id        String   @id @default(cuid())
+  id        String   @id @default(uuid())
   cartId    String
   productId String
   quantity  Int
@@ -106,7 +104,7 @@ model CartItem {
 }
 
 model Order {
-  id         String   @id @default(cuid())
+  id         String   @id @default(uuid())
   userId     String
   total      Float
 
@@ -123,7 +121,7 @@ model Order {
 }
 
 model OrderItem {
-  id        String  @id @default(cuid())
+  id        String  @id @default(uuid())
   orderId   String
   productId String
   quantity  Int
@@ -133,7 +131,7 @@ model OrderItem {
 }
 
 model BridalPartyEvent {
-  id              String   @id @default(cuid())
+  id              String   @id @default(uuid())
   organizerUserId String
   name            String
   eventDate       DateTime
@@ -207,4 +205,27 @@ model ShipmentItem {
   status     String
 
   shipment   Shipment @relation(fields: [shipmentId], references: [id])
+}
+
+model UserProfile {
+  id             String   @id @default(uuid())
+  userId         String   @unique
+  height         Float?
+  weight         Float?
+  chest          Float?
+  waist          Float?
+  bodyType       String?  // slim | average | broad
+  fitPreference  String?  // slim | regular | loose
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model FitFeedback {
+  id        String   @id @default(uuid())
+  userId    String
+  productId String
+  size      String
+  result    String   // too_small | perfect | too_large
+  issueArea String?
+  createdAt DateTime @default(now())
 }

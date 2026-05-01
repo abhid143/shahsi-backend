@@ -6,8 +6,19 @@ import { AppCacheModule } from '../../infra/cache/cache.module';
 import { SearchModule } from '../search/search.module';
 import { AiModule } from '../ai/ai.module';
 
+// ✅ ADD THIS IMPORT
+import { FitEngineModule } from '../fit-engine/fit-engine.module';
+
 @Module({
-  imports: [DatabaseModule, AppCacheModule, SearchModule, AiModule],
+  imports: [
+    DatabaseModule,
+    AppCacheModule,
+    SearchModule,
+    AiModule,
+
+    // 🔥 FIX: ADD THIS
+    FitEngineModule,
+  ],
   providers: [CatalogService],
   controllers: [CatalogController],
 })
