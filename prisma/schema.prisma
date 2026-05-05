@@ -16,49 +16,108 @@ model User {
 model Product {
   id String @id @default(uuid())
 
-  title String
-  description String?
+  title            String
+  description      String?
+  shortDescription String?
 
   slug String @default("")
 
-  // 🔥 ADD THIS FIELD
-  mode String @default("retail") // retail | made_to_order | rental | resale
+  // retail | made_to_order | rental | resale
+  mode String @default("retail")
 
   category String?
-  brand String?
-  color String?
-  fabric String?
+  brand    String?
+  vendor   String?
+  color    String?
+  fabric   String?
   occasion String?
 
-  // 🔥 NEW FIELDS
   composition String?
-  style String?
-  print String?
-  badge String?
+  style       String?
+  print       String?
+  badge       String?
 
-  primaryCollection String?
+  primaryCollection   String?
   secondaryCollection String?
+
+  // Product detail metadata
+  categories       String[] @default([])
+  tags             String[] @default([])
+  careInstructions String[] @default([])
+
+  // Pricing
+  basePrice       Float?
+  compareAtPrice  Float?
+  discountPercent Int?
+  currency        String @default("USD")
 
   // MTO
   productionType String @default("READY_STOCK")
   // READY_STOCK | MADE_TO_ORDER | HYBRID
 
-  isMadeToOrder Boolean @default(false)
-  allowCustomSizing Boolean @default(false)
-  allowRushProduction Boolean @default(false)
+  isMadeToOrder          Boolean @default(false)
+  allowCustomSizing      Boolean @default(false)
+  allowRushProduction    Boolean @default(false)
+  standardLeadTimeDays   Int     @default(21)
+  rushLeadTimeDays       Int?
+  rushFee                Float?
+  customSizingFinalSale  Boolean @default(false)
 
-  standardLeadTimeDays Int @default(21)
-  rushLeadTimeDays Int?
-  rushFee Float?
+  // Availability
+  availabilityStatus String @default("in_stock")
+  // in_stock | low_stock | out_of_stock | preorder | made_to_order
 
-  customSizingFinalSale Boolean @default(false)
+  availabilityLabel String?
+  lowStockThreshold Int @default(3)
 
-  basePrice Float?
-  currency String @default("USD")
+  // Marketing / urgency
+  soldInLastHours Int?
+  soldHoursWindow Int?
+  viewingNow      Int?
+  rating          Float?
+  reviewCount     Int?
+
+  // Delivery
+  estimatedDomestic      String?
+  estimatedInternational String?
+  pickupAvailable        Boolean @default(false)
+  pickupReadyIn          String?
+
+  // Returns
+  returnWindowDays Int?
+  returnText       String?
+  isFinalSale      Boolean @default(false)
+
+  // Store / vendor info
+  storeName           String?
+  storeLocation       String?
+  storeAddress        String?
+  storePickupAvailable Boolean @default(false)
+
+  // Tabs content
+  tabDescription      String?
+  tabCompositionCare  String?
+  tabShippingReturns  String?
+  tabReturnPolicies   String?
+
+  // Reviews summary
+  reviewsAverage Float?
+  reviewsTotal   Int?
+  review5Count   Int @default(0)
+  review4Count   Int @default(0)
+  review3Count   Int @default(0)
+  review2Count   Int @default(0)
+  review1Count   Int @default(0)
+
+  // Size guide
+  sizeGuideUnit String @default("inches")
+
+  // Payment icons/config
+  paymentMethods String[] @default([])
 
   status String @default("active")
 
-  seoTitle String?
+  seoTitle       String?
   seoDescription String?
 
   printSwatch String?
@@ -66,37 +125,55 @@ model Product {
   embedding Float[]
 
   createdAt DateTime @default(now())
-  updatedAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
 
   variants ProductVariant[]
-  images ProductImage[]
+  images   ProductImage[]
+  colors   ProductColor[]
+  reviews  ProductReview[]
+
+  relatedProducts ProductRelatedProduct[] @relation("RelatedProductSource")
+  relatedTo        ProductRelatedProduct[] @relation("RelatedProductTarget")
 }
 
 model ProductVariant {
-  id String @id @default(uuid())
+  id        String  @id @default(uuid())
   productId String
-  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
-  size String
-  chest Float
-  waist Float
-  length Float
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  size  String
+  color String?
+
+  chest   Float
+  waist   Float
+  length  Float
   fitType String // slim | regular | oversized
-  price Float
+
+  price          Float
   compareAtPrice Float?
-  stock Int
-  sku String @unique
+  stock          Int
+
+  sku     String @unique
   barcode String?
-  weight Float?
+
+  weight     Float?
   weightUnit String?
+
+  isAvailable Boolean @default(true)
+
   // READY_STOCK | MADE_TO_ORDER
-  isShipsNow Boolean @default(false)
+  isShipsNow    Boolean @default(false)
   productionType String @default("READY_STOCK")
 
   createdAt DateTime @default(now())
+
+  @@index([productId])
+  @@index([color])
+  @@index([size])
 }
 
 model ProductImage {
-  id        String   @id @default(uuid())
+  id String @id @default(uuid())
 
   productId String
   product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
@@ -104,8 +181,68 @@ model ProductImage {
   url       String
   alt       String?
   isPrimary Boolean @default(false)
+  position  Int     @default(0)
+
+  // Optional: image can belong to a color swatch/gallery
+  colorName String?
+
+  @@index([productId])
+  @@index([position])
 }
 
+model ProductColor {
+  id String @id @default(uuid())
+
+  productId String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  name       String
+  hex        String?
+  imageUrl   String?
+  isSelected Boolean @default(false)
+  position   Int     @default(0)
+
+  createdAt DateTime @default(now())
+
+  @@index([productId])
+  @@unique([productId, name])
+}
+
+model ProductReview {
+  id String @id @default(uuid())
+
+  productId String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  title     String?
+  rating    Int
+  comment   String?
+  author    String?
+  images    String[] @default([])
+
+  createdAt DateTime @default(now())
+
+  @@index([productId])
+  @@index([rating])
+}
+
+model ProductRelatedProduct {
+  id String @id @default(uuid())
+
+  productId        String
+  relatedProductId String
+
+  product        Product @relation("RelatedProductSource", fields: [productId], references: [id], onDelete: Cascade)
+  relatedProduct Product @relation("RelatedProductTarget", fields: [relatedProductId], references: [id], onDelete: Cascade)
+
+  position Int @default(0)
+
+  createdAt DateTime @default(now())
+
+  @@unique([productId, relatedProductId])
+  @@index([productId])
+  @@index([relatedProductId])
+}
 
 model Cart {
   id        String     @id @default(uuid())

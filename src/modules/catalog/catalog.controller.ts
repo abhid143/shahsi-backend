@@ -11,8 +11,6 @@ import {
 import { CatalogService } from './catalog.service';
 import { CreateProductDto } from './application/dto/create-product.dto';
 import { ApiResponse } from '../../shared/utils/api-response';
-
-// 🔥 ADD THIS IMPORT
 import { FitRequestDto } from '../fit-engine/dto/fit-request.dto';
 
 @Controller('catalog')
@@ -37,6 +35,12 @@ export class CatalogController {
     return ApiResponse.success(data);
   }
 
+  @Get('slug/:slug')
+  async findBySlug(@Param('slug') slug: string) {
+    const data = await this.catalog.getProductBySlug(slug);
+    return ApiResponse.success(data);
+  }
+
   @Get(':id')
   async findOne(@Param('id') id: string) {
     const data = await this.catalog.getProductById(id);
@@ -44,7 +48,7 @@ export class CatalogController {
   }
 
   @Patch(':id')
-  async update(@Param('id') id: string, @Body() body: any) {
+  async update(@Param('id') id: string, @Body() body: Partial<CreateProductDto>) {
     const data = await this.catalog.updateProduct(id, body);
     return ApiResponse.success(data);
   }
@@ -55,7 +59,6 @@ export class CatalogController {
     return ApiResponse.success(data);
   }
 
-  // 🔥 NEW: FIT RECOMMENDATION API (NO CHANGE IN EXISTING APIs)
   @Post(':id/fit')
   async getFit(
     @Param('id') productId: string,

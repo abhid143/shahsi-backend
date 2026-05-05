@@ -29,6 +29,14 @@ export enum VariantProductionType {
   MADE_TO_ORDER = 'MADE_TO_ORDER',
 }
 
+export enum AvailabilityStatus {
+  IN_STOCK = 'in_stock',
+  LOW_STOCK = 'low_stock',
+  OUT_OF_STOCK = 'out_of_stock',
+  PREORDER = 'preorder',
+  MADE_TO_ORDER = 'made_to_order',
+}
+
 class ImageDto {
   @ApiProperty()
   @IsString()
@@ -43,12 +51,27 @@ class ImageDto {
   @IsOptional()
   @IsBoolean()
   isPrimary?: boolean;
+
+  @ApiPropertyOptional({ example: 1 })
+  @IsOptional()
+  @IsNumber()
+  position?: number;
+
+  @ApiPropertyOptional({ example: 'Sage Green' })
+  @IsOptional()
+  @IsString()
+  colorName?: string;
 }
 
 class VariantDto {
   @ApiProperty()
   @IsString()
   size!: string;
+
+  @ApiPropertyOptional({ example: 'Sage Green' })
+  @IsOptional()
+  @IsString()
+  color?: string;
 
   @ApiProperty()
   @IsNumber()
@@ -82,7 +105,6 @@ class VariantDto {
   @IsString()
   weightUnit?: string;
 
-  // FIT ENGINE FIELDS
   @ApiPropertyOptional({ example: 98 })
   @IsOptional()
   @IsNumber()
@@ -98,12 +120,19 @@ class VariantDto {
   @IsNumber()
   length?: number;
 
-  @ApiPropertyOptional({ example: 'regular', enum: ['slim', 'regular', 'oversized'] })
+  @ApiPropertyOptional({
+    example: 'regular',
+    enum: ['slim', 'regular', 'oversized'],
+  })
   @IsOptional()
   @IsIn(['slim', 'regular', 'oversized'])
   fitType?: 'slim' | 'regular' | 'oversized';
 
-  // SHIPS NOW / VARIANT PRODUCTION
+  @ApiPropertyOptional({ example: true })
+  @IsOptional()
+  @IsBoolean()
+  isAvailable?: boolean;
+
   @ApiPropertyOptional({ example: true })
   @IsOptional()
   @IsBoolean()
@@ -118,6 +147,70 @@ class VariantDto {
   productionType?: VariantProductionType;
 }
 
+class ProductColorDto {
+  @ApiProperty({ example: 'Sage Green' })
+  @IsString()
+  name!: string;
+
+  @ApiPropertyOptional({ example: '#8A9A5B' })
+  @IsOptional()
+  @IsString()
+  hex?: string;
+
+  @ApiPropertyOptional({ example: 'https://cdn.example.com/swatch.jpg' })
+  @IsOptional()
+  @IsString()
+  imageUrl?: string;
+
+  @ApiPropertyOptional({ example: true })
+  @IsOptional()
+  @IsBoolean()
+  isSelected?: boolean;
+
+  @ApiPropertyOptional({ example: 1 })
+  @IsOptional()
+  @IsNumber()
+  position?: number;
+}
+
+class ProductReviewDto {
+  @ApiPropertyOptional({ example: 'Superb quality apparel' })
+  @IsOptional()
+  @IsString()
+  title?: string;
+
+  @ApiProperty({ example: 5 })
+  @IsNumber()
+  rating!: number;
+
+  @ApiPropertyOptional({ example: 'Great product quality.' })
+  @IsOptional()
+  @IsString()
+  comment?: string;
+
+  @ApiPropertyOptional({ example: 'Customer' })
+  @IsOptional()
+  @IsString()
+  author?: string;
+
+  @ApiPropertyOptional({ type: [String] })
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  images?: string[];
+}
+
+class RelatedProductDto {
+  @ApiProperty({ example: 'related-product-id' })
+  @IsString()
+  relatedProductId!: string;
+
+  @ApiPropertyOptional({ example: 1 })
+  @IsOptional()
+  @IsNumber()
+  position?: number;
+}
+
 export class CreateProductDto {
   @ApiProperty()
   @IsString()
@@ -127,6 +220,11 @@ export class CreateProductDto {
   @IsOptional()
   @IsString()
   description?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  shortDescription?: string;
 
   @ApiProperty()
   @IsString()
@@ -145,6 +243,11 @@ export class CreateProductDto {
   @IsOptional()
   @IsString()
   brand?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  vendor?: string;
 
   @ApiPropertyOptional()
   @IsOptional()
@@ -191,27 +294,44 @@ export class CreateProductDto {
   @IsString()
   secondaryCollection?: string;
 
+  @ApiPropertyOptional({ type: [String] })
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  categories?: string[];
+
+  @ApiPropertyOptional({ type: [String] })
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  tags?: string[];
+
+  @ApiPropertyOptional({ type: [String] })
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  careInstructions?: string[];
+
   @ApiPropertyOptional({ example: 99 })
   @IsOptional()
   @IsNumber()
   basePrice?: number;
+
+  @ApiPropertyOptional({ example: 129 })
+  @IsOptional()
+  @IsNumber()
+  compareAtPrice?: number;
+
+  @ApiPropertyOptional({ example: 25 })
+  @IsOptional()
+  @IsNumber()
+  discountPercent?: number;
 
   @ApiPropertyOptional({ example: 'USD' })
   @IsOptional()
   @IsString()
   currency?: string;
 
-  @ApiPropertyOptional()
-  @IsOptional()
-  @IsString()
-  seoTitle?: string;
-
-  @ApiPropertyOptional()
-  @IsOptional()
-  @IsString()
-  seoDescription?: string;
-
-  // PRODUCT LEVEL MTO CONFIG
   @ApiPropertyOptional({
     example: ProductProductionType.HYBRID,
     enum: ProductProductionType,
@@ -255,6 +375,185 @@ export class CreateProductDto {
   @IsBoolean()
   customSizingFinalSale?: boolean;
 
+  @ApiPropertyOptional({
+    example: AvailabilityStatus.IN_STOCK,
+    enum: AvailabilityStatus,
+  })
+  @IsOptional()
+  @IsEnum(AvailabilityStatus)
+  availabilityStatus?: AvailabilityStatus;
+
+  @ApiPropertyOptional({ example: 'In stock' })
+  @IsOptional()
+  @IsString()
+  availabilityLabel?: string;
+
+  @ApiPropertyOptional({ example: 3 })
+  @IsOptional()
+  @IsNumber()
+  lowStockThreshold?: number;
+
+  @ApiPropertyOptional({ example: 18 })
+  @IsOptional()
+  @IsNumber()
+  soldInLastHours?: number;
+
+  @ApiPropertyOptional({ example: 32 })
+  @IsOptional()
+  @IsNumber()
+  soldHoursWindow?: number;
+
+  @ApiPropertyOptional({ example: 28 })
+  @IsOptional()
+  @IsNumber()
+  viewingNow?: number;
+
+  @ApiPropertyOptional({ example: 4.9 })
+  @IsOptional()
+  @IsNumber()
+  rating?: number;
+
+  @ApiPropertyOptional({ example: 134 })
+  @IsOptional()
+  @IsNumber()
+  reviewCount?: number;
+
+  @ApiPropertyOptional({ example: '3-6 days in United States' })
+  @IsOptional()
+  @IsString()
+  estimatedDomestic?: string;
+
+  @ApiPropertyOptional({ example: '12-26 days international' })
+  @IsOptional()
+  @IsString()
+  estimatedInternational?: string;
+
+  @ApiPropertyOptional({ example: true })
+  @IsOptional()
+  @IsBoolean()
+  pickupAvailable?: boolean;
+
+  @ApiPropertyOptional({ example: 'Usually ready in 24 hours' })
+  @IsOptional()
+  @IsString()
+  pickupReadyIn?: string;
+
+  @ApiPropertyOptional({ example: 45 })
+  @IsOptional()
+  @IsNumber()
+  returnWindowDays?: number;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  returnText?: string;
+
+  @ApiPropertyOptional({ example: false })
+  @IsOptional()
+  @IsBoolean()
+  isFinalSale?: boolean;
+
+  @ApiPropertyOptional({ example: 'Shahsi' })
+  @IsOptional()
+  @IsString()
+  storeName?: string;
+
+  @ApiPropertyOptional({ example: 'New York, United States' })
+  @IsOptional()
+  @IsString()
+  storeLocation?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  storeAddress?: string;
+
+  @ApiPropertyOptional({ example: true })
+  @IsOptional()
+  @IsBoolean()
+  storePickupAvailable?: boolean;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  tabDescription?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  tabCompositionCare?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  tabShippingReturns?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  tabReturnPolicies?: string;
+
+  @ApiPropertyOptional({ example: 4.9 })
+  @IsOptional()
+  @IsNumber()
+  reviewsAverage?: number;
+
+  @ApiPropertyOptional({ example: 168 })
+  @IsOptional()
+  @IsNumber()
+  reviewsTotal?: number;
+
+  @ApiPropertyOptional({ example: 59 })
+  @IsOptional()
+  @IsNumber()
+  review5Count?: number;
+
+  @ApiPropertyOptional({ example: 46 })
+  @IsOptional()
+  @IsNumber()
+  review4Count?: number;
+
+  @ApiPropertyOptional({ example: 0 })
+  @IsOptional()
+  @IsNumber()
+  review3Count?: number;
+
+  @ApiPropertyOptional({ example: 0 })
+  @IsOptional()
+  @IsNumber()
+  review2Count?: number;
+
+  @ApiPropertyOptional({ example: 0 })
+  @IsOptional()
+  @IsNumber()
+  review1Count?: number;
+
+  @ApiPropertyOptional({ example: 'inches' })
+  @IsOptional()
+  @IsString()
+  sizeGuideUnit?: string;
+
+  @ApiPropertyOptional({ type: [String], example: ['visa', 'mastercard'] })
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  paymentMethods?: string[];
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  seoTitle?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  seoDescription?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  printSwatch?: string;
+
   @ApiProperty({ type: [ImageDto] })
   @IsArray()
   @ValidateNested({ each: true })
@@ -266,4 +565,25 @@ export class CreateProductDto {
   @ValidateNested({ each: true })
   @Type(() => VariantDto)
   variants!: VariantDto[];
+
+  @ApiPropertyOptional({ type: [ProductColorDto] })
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => ProductColorDto)
+  colors?: ProductColorDto[];
+
+  @ApiPropertyOptional({ type: [ProductReviewDto] })
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => ProductReviewDto)
+  reviews?: ProductReviewDto[];
+
+  @ApiPropertyOptional({ type: [RelatedProductDto] })
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => RelatedProductDto)
+  relatedProducts?: RelatedProductDto[];
 }
