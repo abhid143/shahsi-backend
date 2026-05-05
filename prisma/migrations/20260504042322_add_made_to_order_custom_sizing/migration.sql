@@ -1,0 +1,43 @@
+-- AlterTable
+ALTER TABLE "CartItem" ADD COLUMN     "bust" DOUBLE PRECISION,
+ADD COLUMN     "customSizingAccepted" BOOLEAN NOT NULL DEFAULT false,
+ADD COLUMN     "deliveryOption" TEXT NOT NULL DEFAULT 'STANDARD',
+ADD COLUMN     "estimatedArrivalEnd" TIMESTAMP(3),
+ADD COLUMN     "estimatedArrivalStart" TIMESTAMP(3),
+ADD COLUMN     "extraLength" DOUBLE PRECISION,
+ADD COLUMN     "heightBareFoot" DOUBLE PRECISION,
+ADD COLUMN     "hips" DOUBLE PRECISION,
+ADD COLUMN     "hollowToFloor" DOUBLE PRECISION,
+ADD COLUMN     "sizeType" TEXT NOT NULL DEFAULT 'STANDARD',
+ADD COLUMN     "variantId" TEXT,
+ADD COLUMN     "waist" DOUBLE PRECISION;
+
+-- AlterTable
+ALTER TABLE "OrderItem" ADD COLUMN     "bust" DOUBLE PRECISION,
+ADD COLUMN     "customSizingAccepted" BOOLEAN NOT NULL DEFAULT false,
+ADD COLUMN     "deliveryOption" TEXT NOT NULL DEFAULT 'STANDARD',
+ADD COLUMN     "estimatedArrivalEnd" TIMESTAMP(3),
+ADD COLUMN     "estimatedArrivalStart" TIMESTAMP(3),
+ADD COLUMN     "extraLength" DOUBLE PRECISION,
+ADD COLUMN     "finalSale" BOOLEAN NOT NULL DEFAULT false,
+ADD COLUMN     "heightBareFoot" DOUBLE PRECISION,
+ADD COLUMN     "hips" DOUBLE PRECISION,
+ADD COLUMN     "hollowToFloor" DOUBLE PRECISION,
+ADD COLUMN     "productionType" TEXT NOT NULL DEFAULT 'READY_STOCK',
+ADD COLUMN     "sizeType" TEXT NOT NULL DEFAULT 'STANDARD',
+ADD COLUMN     "variantId" TEXT,
+ADD COLUMN     "waist" DOUBLE PRECISION;
+
+-- AlterTable
+ALTER TABLE "Product" ADD COLUMN     "allowCustomSizing" BOOLEAN NOT NULL DEFAULT false,
+ADD COLUMN     "allowRushProduction" BOOLEAN NOT NULL DEFAULT false,
+ADD COLUMN     "customSizingFinalSale" BOOLEAN NOT NULL DEFAULT false,
+ADD COLUMN     "isMadeToOrder" BOOLEAN NOT NULL DEFAULT false,
+ADD COLUMN     "productionType" TEXT NOT NULL DEFAULT 'READY_STOCK',
+ADD COLUMN     "rushFee" DOUBLE PRECISION,
+ADD COLUMN     "rushLeadTimeDays" INTEGER,
+ADD COLUMN     "standardLeadTimeDays" INTEGER NOT NULL DEFAULT 21;
+
+-- AlterTable
+ALTER TABLE "ProductVariant" ADD COLUMN     "isShipsNow" BOOLEAN NOT NULL DEFAULT false,
+ADD COLUMN     "productionType" TEXT NOT NULL DEFAULT 'READY_STOCK';

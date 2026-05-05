@@ -17,12 +17,13 @@ import { FitEngineModule } from '../modules/fit-engine/fit-engine.module';
 import { UserProfileModule } from '../modules/user-profile/user-profile.module';
 import { RecommendationEngineModule } from '../modules/recommendation-engine/recommendation-engine.module';
 import { ReturnsFeedbackModule } from '../modules/returns-feedback/returns-feedback.module';
+import { RetailModule } from '../modules/retail/retail.module';
 
 @Module({
   imports: [AuthModule,CatalogModule,AppCacheModule,
     LoggingModule,CartModule,CheckoutModule,PaymentsModule,SearchModule,
     BridalPartyModule,FitEngineModule,UserProfileModule,RecommendationEngineModule,
-    ReturnsFeedbackModule], 
+    ReturnsFeedbackModule,RetailModule], 
   controllers: [AppController,HealthController],
   providers: [AppService],
 })

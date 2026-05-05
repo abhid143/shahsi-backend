@@ -14,63 +14,83 @@ model User {
 }
 
 model Product {
-  id          String   @id @default(uuid())
+  id String @id @default(uuid())
 
-  title       String
+  title String
   description String?
 
   slug String @default("")
 
-  category    String?
-  brand       String?
-  color       String?
-  fabric      String?
-  occasion    String?
+  // 🔥 ADD THIS FIELD
+  mode String @default("retail") // retail | made_to_order | rental | resale
+
+  category String?
+  brand String?
+  color String?
+  fabric String?
+  occasion String?
 
   // 🔥 NEW FIELDS
-  composition  String?
-  style        String?
-  print        String?
-  badge        String?
+  composition String?
+  style String?
+  print String?
+  badge String?
 
-  primaryCollection   String?
+  primaryCollection String?
   secondaryCollection String?
 
-  basePrice   Float?
-  currency    String @default("USD")
+  // MTO
+  productionType String @default("READY_STOCK")
+  // READY_STOCK | MADE_TO_ORDER | HYBRID
 
-  status      String @default("active")
+  isMadeToOrder Boolean @default(false)
+  allowCustomSizing Boolean @default(false)
+  allowRushProduction Boolean @default(false)
 
-  seoTitle        String?
-  seoDescription  String?
+  standardLeadTimeDays Int @default(21)
+  rushLeadTimeDays Int?
+  rushFee Float?
 
-  printSwatch     String?
+  customSizingFinalSale Boolean @default(false)
 
-  embedding   Float[]
+  basePrice Float?
+  currency String @default("USD")
 
-  createdAt   DateTime @default(now())
+  status String @default("active")
+
+  seoTitle String?
+  seoDescription String?
+
+  printSwatch String?
+
+  embedding Float[]
+
+  createdAt DateTime @default(now())
   updatedAt DateTime @default(now())
 
-  variants    ProductVariant[]
-  images      ProductImage[]
+  variants ProductVariant[]
+  images ProductImage[]
 }
 
 model ProductVariant {
-  id        String   @id @default(uuid())
+  id String @id @default(uuid())
   productId String
-  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
-  size      String
-  chest     Float
-  waist     Float
-  length    Float
-  fitType   String // slim | regular | oversized
-  price         Float
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  size String
+  chest Float
+  waist Float
+  length Float
+  fitType String // slim | regular | oversized
+  price Float
   compareAtPrice Float?
-  stock     Int
-  sku       String   @unique
-  barcode   String?
-  weight    Float?
+  stock Int
+  sku String @unique
+  barcode String?
+  weight Float?
   weightUnit String?
+  // READY_STOCK | MADE_TO_ORDER
+  isShipsNow Boolean @default(false)
+  productionType String @default("READY_STOCK")
 
   createdAt DateTime @default(now())
 }
@@ -100,6 +120,26 @@ model CartItem {
   productId String
   quantity  Int
 
+  variantId String?
+
+  sizeType String @default("STANDARD")
+  // STANDARD | CUSTOM
+
+  bust Float?
+  waist Float?
+  hips Float?
+  hollowToFloor Float?
+  heightBareFoot Float?
+  extraLength Float?
+
+  customSizingAccepted Boolean @default(false)
+
+  deliveryOption String @default("STANDARD")
+  // STANDARD | RUSH
+
+  estimatedArrivalStart DateTime?
+  estimatedArrivalEnd   DateTime?
+
   cart Cart @relation(fields: [cartId], references: [id])
 }
 
@@ -126,6 +166,30 @@ model OrderItem {
   productId String
   quantity  Int
   price     Float
+
+  variantId String?
+
+  sizeType String @default("STANDARD")
+
+  bust Float?
+  waist Float?
+  hips Float?
+  hollowToFloor Float?
+  heightBareFoot Float?
+  extraLength Float?
+
+  customSizingAccepted Boolean @default(false)
+
+  productionType String @default("READY_STOCK")
+  // READY_STOCK | MADE_TO_ORDER
+
+  deliveryOption String @default("STANDARD")
+  // STANDARD | RUSH
+
+  estimatedArrivalStart DateTime?
+  estimatedArrivalEnd   DateTime?
+
+  finalSale Boolean @default(false)
 
   order Order @relation(fields: [orderId], references: [id])
 }
@@ -187,7 +251,7 @@ model BridalPartyInvite {
 
 model Shipment {
   id             String         @id @default(uuid())
-  eventId        String
+  eventId        String?
   orderId        String
   status         String
   trackingNumber String?

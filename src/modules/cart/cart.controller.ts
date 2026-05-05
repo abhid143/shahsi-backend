@@ -28,12 +28,8 @@ export class CartController {
 
   @Post('add')
   @ApiOperation({ summary: 'Add product to cart' })
-  add(@Req() req, @Body() body: AddToCartDto) {
-    return this.cart.addToCart(
-      req.user.userId,
-      body.productId,
-      body.quantity,
-    );
+  addToCart(@Req() req, @Body() dto: AddToCartDto) {
+    return this.cart.addToCart(req.user.userId, dto);
   }
 
   @Delete('remove/:id')

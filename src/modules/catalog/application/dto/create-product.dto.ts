@@ -6,19 +6,40 @@ import {
   ValidateNested,
   IsNumber,
   IsBoolean,
+  IsEnum,
+  IsIn,
 } from 'class-validator';
 import { Type } from 'class-transformer';
+
+export enum ProductMode {
+  RETAIL = 'retail',
+  MADE_TO_ORDER = 'made_to_order',
+  RENTAL = 'rental',
+  RESALE = 'resale',
+}
+
+export enum ProductProductionType {
+  READY_STOCK = 'READY_STOCK',
+  MADE_TO_ORDER = 'MADE_TO_ORDER',
+  HYBRID = 'HYBRID',
+}
+
+export enum VariantProductionType {
+  READY_STOCK = 'READY_STOCK',
+  MADE_TO_ORDER = 'MADE_TO_ORDER',
+}
 
 class ImageDto {
   @ApiProperty()
   @IsString()
   url!: string;
 
-  @ApiProperty({ required: false })
+  @ApiPropertyOptional()
   @IsOptional()
+  @IsString()
   alt?: string;
 
-  @ApiProperty({ default: false })
+  @ApiPropertyOptional({ default: false })
   @IsOptional()
   @IsBoolean()
   isPrimary?: boolean;
@@ -33,7 +54,7 @@ class VariantDto {
   @IsNumber()
   price!: number;
 
-  @ApiProperty({ required: false })
+  @ApiPropertyOptional()
   @IsOptional()
   @IsNumber()
   compareAtPrice?: number;
@@ -46,20 +67,22 @@ class VariantDto {
   @IsString()
   sku!: string;
 
-  @ApiProperty({ required: false })
+  @ApiPropertyOptional()
   @IsOptional()
+  @IsString()
   barcode?: string;
 
-  @ApiProperty({ required: false })
+  @ApiPropertyOptional()
   @IsOptional()
+  @IsNumber()
   weight?: number;
 
-  @ApiProperty({ required: false })
+  @ApiPropertyOptional()
   @IsOptional()
+  @IsString()
   weightUnit?: string;
 
-  // 🔥 NEW (FIT ENGINE FIELDS - IMPORTANT)
-
+  // FIT ENGINE FIELDS
   @ApiPropertyOptional({ example: 98 })
   @IsOptional()
   @IsNumber()
@@ -75,10 +98,24 @@ class VariantDto {
   @IsNumber()
   length?: number;
 
-  @ApiPropertyOptional({ example: 'regular' })
+  @ApiPropertyOptional({ example: 'regular', enum: ['slim', 'regular', 'oversized'] })
   @IsOptional()
-  @IsString()
+  @IsIn(['slim', 'regular', 'oversized'])
   fitType?: 'slim' | 'regular' | 'oversized';
+
+  // SHIPS NOW / VARIANT PRODUCTION
+  @ApiPropertyOptional({ example: true })
+  @IsOptional()
+  @IsBoolean()
+  isShipsNow?: boolean;
+
+  @ApiPropertyOptional({
+    example: VariantProductionType.READY_STOCK,
+    enum: VariantProductionType,
+  })
+  @IsOptional()
+  @IsEnum(VariantProductionType)
+  productionType?: VariantProductionType;
 }
 
 export class CreateProductDto {
@@ -86,74 +123,137 @@ export class CreateProductDto {
   @IsString()
   title!: string;
 
-  @ApiProperty()
+  @ApiPropertyOptional()
   @IsOptional()
+  @IsString()
   description?: string;
 
   @ApiProperty()
   @IsString()
   slug!: string;
 
-  @ApiProperty({ required: false })
+  @ApiProperty({ enum: ProductMode, example: ProductMode.RETAIL })
+  @IsEnum(ProductMode)
+  mode!: ProductMode;
+
+  @ApiPropertyOptional()
   @IsOptional()
+  @IsString()
   category?: string;
 
-  @ApiProperty({ required: false })
+  @ApiPropertyOptional()
   @IsOptional()
+  @IsString()
   brand?: string;
 
-  @ApiProperty({ required: false })
+  @ApiPropertyOptional()
   @IsOptional()
+  @IsString()
   color?: string;
 
-  @ApiProperty({ required: false })
+  @ApiPropertyOptional()
   @IsOptional()
+  @IsString()
   fabric?: string;
 
-  @ApiProperty({ required: false })
+  @ApiPropertyOptional()
   @IsOptional()
+  @IsString()
   occasion?: string;
 
-  // 🔥 EXTRA PRODUCT ATTRIBUTES
-  @ApiProperty({ required: false })
+  @ApiPropertyOptional()
   @IsOptional()
+  @IsString()
   composition?: string;
 
-  @ApiProperty({ required: false })
+  @ApiPropertyOptional()
   @IsOptional()
+  @IsString()
   style?: string;
 
-  @ApiProperty({ required: false })
+  @ApiPropertyOptional()
   @IsOptional()
+  @IsString()
   print?: string;
 
-  @ApiProperty({ required: false })
+  @ApiPropertyOptional()
   @IsOptional()
+  @IsString()
   badge?: string;
 
-  @ApiProperty({ required: false })
+  @ApiPropertyOptional()
   @IsOptional()
+  @IsString()
   primaryCollection?: string;
 
-  @ApiProperty({ required: false })
+  @ApiPropertyOptional()
   @IsOptional()
+  @IsString()
   secondaryCollection?: string;
 
-  @ApiProperty({ required: false })
+  @ApiPropertyOptional({ example: 99 })
   @IsOptional()
+  @IsNumber()
   basePrice?: number;
 
-  @ApiProperty({ required: false })
+  @ApiPropertyOptional({ example: 'USD' })
   @IsOptional()
+  @IsString()
   currency?: string;
 
-  @ApiProperty({ required: false })
+  @ApiPropertyOptional()
   @IsOptional()
+  @IsString()
   seoTitle?: string;
 
-  @ApiProperty({ required: false })
+  @ApiPropertyOptional()
   @IsOptional()
+  @IsString()
   seoDescription?: string;
+
+  // PRODUCT LEVEL MTO CONFIG
+  @ApiPropertyOptional({
+    example: ProductProductionType.HYBRID,
+    enum: ProductProductionType,
+  })
+  @IsOptional()
+  @IsEnum(ProductProductionType)
+  productionType?: ProductProductionType;
+
+  @ApiPropertyOptional({ example: true })
+  @IsOptional()
+  @IsBoolean()
+  isMadeToOrder?: boolean;
+
+  @ApiPropertyOptional({ example: true })
+  @IsOptional()
+  @IsBoolean()
+  allowCustomSizing?: boolean;
+
+  @ApiPropertyOptional({ example: true })
+  @IsOptional()
+  @IsBoolean()
+  allowRushProduction?: boolean;
+
+  @ApiPropertyOptional({ example: 21 })
+  @IsOptional()
+  @IsNumber()
+  standardLeadTimeDays?: number;
+
+  @ApiPropertyOptional({ example: 14 })
+  @IsOptional()
+  @IsNumber()
+  rushLeadTimeDays?: number;
+
+  @ApiPropertyOptional({ example: 5 })
+  @IsOptional()
+  @IsNumber()
+  rushFee?: number;
+
+  @ApiPropertyOptional({ example: true })
+  @IsOptional()
+  @IsBoolean()
+  customSizingFinalSale?: boolean;
 
   @ApiProperty({ type: [ImageDto] })
   @IsArray()
